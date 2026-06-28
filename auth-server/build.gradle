@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.0'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.hour'
+version = '0.0.1-SNAPSHOT'
+description = 'auth-server'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Core Spring Boot
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    // Spring Security + OAuth2 Resource Server (JWT validation)
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    // ^ this pulls in nimbus-jose-jwt automatically, no need to add it separately
+
+    // JPA + DB (auth service only — skip in pure consumer services if not needed)
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    runtimeOnly("org.postgresql:postgresql")
+
+    // Redis (auth service — refresh token store + revocation)
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // Actuator (liveness/readiness probes for OCP)
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+    // Lombok
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
+    // Testing
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

@@ -1,0 +1,65 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: auth-server
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      pool-name: AuthHikariPool
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASS:}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+      groups:
+        readiness:
+          include: db, readinessState
+        liveness:
+          include: livenessState
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+jwt:
+  private-key: file:/etc/auth/keys/private.pem
+  public-key: file:/etc/auth/keys/public.pem
+  access-token-expiry: 900       # 15 minutes in seconds
+  refresh-token-expiry: 604800   # 7 days in seconds
+  issuer: http://localhost:8081
+logging:
+  level:
+    com.authserver: ${LOG_LEVEL:INFO}
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
